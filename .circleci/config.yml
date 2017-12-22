@@ -1,0 +1,19 @@
+version: 2
+jobs:
+  test:
+    working_directory: /test
+    docker:  
+      - image: microsoft/dotnet:1.1.1-sdk
+    environment:
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+      DOTNET_CLI_TELEMETRY_OUTPUT: 1
+    steps:
+      - checkout
+      - run: dotnet restore Analytics.E2ETest/Analytics.E2ETest.csproj
+      - run: dotnet build Analytics.E2ETest/Analytics.E2ETest.csproj
+      - run: cd Analytics.E2ETest/ && dotnet xunit
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - test
