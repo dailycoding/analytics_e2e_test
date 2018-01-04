@@ -60,7 +60,6 @@ namespace Segment.E2ETest
         public void Test()
         {
             var token = Environment.GetEnvironmentVariable("RUNSCOPE_TOKEN");
-            Console.WriteLine("Token: {0}", token);
 
             this.client = new AxiosClient("https://api.runscope.com", 10 * 1000, token);
             this.client.SetRetryCount(3);
@@ -68,7 +67,7 @@ namespace Segment.E2ETest
             for (int i = 0; i < 5; i++)
             {
                 // Runscope Bucket for https://www.runscope.com/stream/pwb8mcmfks0f.
-                var messageResponse = client.Get("buckets/" + Constants.RUNSCOPE_BUCKET + "/messages?count=10").Result;
+                var messageResponse = client.Get("buckets/" + Constants.RUNSCOPE_BUCKET + "/messages").Result;
                 Assert.True(messageResponse.StatusCode == System.Net.HttpStatusCode.OK);
 
                 var content = messageResponse.Content.ReadAsStringAsync().Result;
