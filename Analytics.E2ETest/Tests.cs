@@ -49,6 +49,16 @@ namespace Segment.E2ETest
 
             // Give some time for events to be delivered from the API to destinations.
             Task.Delay(5 * 1000);   // 5 seconds.
+
+            // get all
+            var token = Environment.GetEnvironmentVariable("RUNSCOPE_TOKEN");
+            Console.WriteLine("Runscope Token: {0}", token);
+
+            var enumerator = Environment.GetEnvironmentVariables().GetEnumerator();
+            while (enumerator.MoveNext())
+            {
+                Console.WriteLine($"{enumerator.Key,5}:{enumerator.Value,100}");
+            } 
         }
 
         public void Dispose()
