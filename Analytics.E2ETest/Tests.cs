@@ -49,16 +49,6 @@ namespace Segment.E2ETest
 
             // Give some time for events to be delivered from the API to destinations.
             Task.Delay(5 * 1000);   // 5 seconds.
-
-            // get all
-            var token = Environment.GetEnvironmentVariable("RUNSCOPE_TOKEN");
-            Console.WriteLine("Runscope Token: {0}", token);
-
-            var enumerator = Environment.GetEnvironmentVariables().GetEnumerator();
-            while (enumerator.MoveNext())
-            {
-                Console.WriteLine($"{enumerator.Key,5}:{enumerator.Value,100}");
-            } 
         }
 
         public void Dispose()
@@ -69,13 +59,15 @@ namespace Segment.E2ETest
         [Fact()]
         public void Test()
         {
-            this.client = new AxiosClient("https://api.runscope.com", 10 * 1000, Constants.RUNSCOPE_TOKEN);
+            var token = Environment.GetEnvironmentVariable("RUNSCOPE_TOKEN");
+
+            this.client = new AxiosClient("https://api.runscope.com", 10 * 1000, token);
             this.client.SetRetryCount(3);
 
             for (int i = 0; i < 5; i++)
             {
                 // Runscope Bucket for https://www.runscope.com/stream/pwb8mcmfks0f.
-                var messageResponse = client.Get("buckets/pwb8mcmfks0f/messages?count=10").Result;
+                var messageResponse = client.Get("buckets/" + Constants.RUNSCOPE_BUCKET + "/messages?count=10").Result;
                 Assert.True(messageResponse.StatusCode == System.Net.HttpStatusCode.OK);
 
                 var content = messageResponse.Content.ReadAsStringAsync().Result;
@@ -83,7 +75,7 @@ namespace Segment.E2ETest
 
                 var messages = Task.WhenAll(data["data"].Children().Select(async item =>
                 {
-                    var response = client.Get("buckets/pwb8mcmfks0f/messages/" + item["uuid"]).Result;
+                    var response = client.Get("buckets/" + Constants.RUNSCOPE_BUCKET + "/messages/" + item["uuid"]).Result;
                     Assert.True(response.StatusCode == System.Net.HttpStatusCode.OK);
 
                     var content2 = response.Content.ReadAsStringAsync().Result;
