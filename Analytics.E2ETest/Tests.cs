@@ -60,6 +60,7 @@ namespace Segment.E2ETest
         public void Test()
         {
             var token = Environment.GetEnvironmentVariable("RUNSCOPE_TOKEN");
+            Console.WriteLine("Token: {0}", token);
 
             this.client = new AxiosClient("https://api.runscope.com", 10 * 1000, token);
             this.client.SetRetryCount(3);
