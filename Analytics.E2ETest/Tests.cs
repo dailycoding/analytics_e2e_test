@@ -8,6 +8,7 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Xunit;
 using Newtonsoft.Json.Linq;
+using System.Diagnostics;
 
 namespace Segment.E2ETest
 {
@@ -61,28 +62,45 @@ namespace Segment.E2ETest
             this.client = new AxiosClient("https://api.runscope.com", 10 * 1000, Constants.RUNSCOPE_TOKEN);
             this.client.SetRetryCount(3);
 
-            // Runscope Bucket for https://www.runscope.com/stream/zfte7jmy76oz.
-            var messageResponse = client.Get("buckets/zfte7jmy76oz/messages?count=10").Result;
-            Assert.True(messageResponse.StatusCode == System.Net.HttpStatusCode.OK);
-
-            var content = messageResponse.Content.ReadAsStringAsync().Result;
-            var data = JObject.Parse(content);
-
-            var messages = Task.WhenAll(data["data"].Children().Select(async item =>
+            for (int i = 0; i < 5; i++)
             {
-                var response = client.Get("buckets/zfte7jmy76oz/messages/" + item["uuid"]).Result;
-                Assert.True(response.StatusCode == System.Net.HttpStatusCode.OK);
+                // Runscope Bucket for https://www.runscope.com/stream/pwb8mcmfks0f.
+                var messageResponse = client.Get("buckets/pwb8mcmfks0f/messages?count=10").Result;
+                Assert.True(messageResponse.StatusCode == System.Net.HttpStatusCode.OK);
 
-                var content2 = response.Content.ReadAsStringAsync().Result;
-                return JObject.Parse(content2)["data"]["request"]["body"];
-            })).Result;
+                var content = messageResponse.Content.ReadAsStringAsync().Result;
+                var data = JObject.Parse(content);
 
-            var count = messages.Count(m =>
-            {
-                var body = m.ToString();
-                return JObject.Parse(body)["anonymousId"].ToString() == this.id;
-            });
-            Assert.True(count > 0);
+                var messages = Task.WhenAll(data["data"].Children().Select(async item =>
+                {
+                    var response = client.Get("buckets/pwb8mcmfks0f/messages/" + item["uuid"]).Result;
+                    Assert.True(response.StatusCode == System.Net.HttpStatusCode.OK);
+
+                    var content2 = response.Content.ReadAsStringAsync().Result;
+                    return JObject.Parse(content2)["data"]["request"]["body"];
+                })).Result;
+
+                var count = messages.Count(m =>
+                {
+                    try
+                    {
+                        var body = m.ToString();
+                        return JObject.Parse(body)["anonymousId"].ToString() == this.id;
+                    }
+                    catch (System.Exception ex)
+                    {
+                        Debug.WriteLine(ex.Message);
+                        return false;
+                    }
+                });
+
+                if (count > 0)
+                    return;
+
+                Task.Delay(5000);
+            }
+
+            Assert.True(false);
         }
     }
 }
