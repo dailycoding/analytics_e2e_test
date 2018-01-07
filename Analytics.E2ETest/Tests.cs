@@ -48,7 +48,7 @@ namespace Segment.E2ETest
             Analytics.Client.Flush();
 
             // Give some time for events to be delivered from the API to destinations.
-            Task.Delay(5 * 1000);   // 5 seconds.
+            Task.Delay(5 * 1000).Wait();   // 5 seconds.
         }
 
         public void Dispose()
@@ -67,7 +67,7 @@ namespace Segment.E2ETest
             for (int i = 0; i < 5; i++)
             {
                 // Runscope Bucket for https://www.runscope.com/stream/pwb8mcmfks0f.
-                var messageResponse = client.Get("buckets/" + Constants.RUNSCOPE_BUCKET + "/messages").Result;
+                var messageResponse = client.Get("buckets/" + Constants.RUNSCOPE_BUCKET + "/messages?count=20").Result;
                 Assert.True(messageResponse.StatusCode == System.Net.HttpStatusCode.OK);
 
                 var content = messageResponse.Content.ReadAsStringAsync().Result;
@@ -99,7 +99,7 @@ namespace Segment.E2ETest
                 if (count > 0)
                     return;
 
-                Task.Delay(5000);
+                Task.Delay(5000).Wait();
             }
 
             Assert.True(false);
